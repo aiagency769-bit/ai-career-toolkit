@@ -1,26 +1,20 @@
-plugins {
-    id 'com.android.application'
-}
+apply plugin: 'com.android.application'
 
 android {
+    compileSdkVersion 35
     namespace 'com.aicareertoolkit.app'
-    compileSdk 35
 
     defaultConfig {
         applicationId "com.aicareertoolkit.app"
-        minSdk 24
-        targetSdk 35
+        minSdkVersion 24
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
     }
 
     buildTypes {
-        debug {
-            debuggable true
-        }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
