@@ -53,11 +53,19 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
           echo "Android SDK: $ANDROID_HOME"
 
-      # ── 8. Make Gradle executable ────────────────────────────────────
+      # ── 8. Install required Android SDK ─────────────────────────────
+      - name: Install Android SDK 34
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "platform-tools" || true
+
+      # ── 9. Make Gradle executable ────────────────────────────────────
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      # ── 9. Build debug APK ───────────────────────────────────────────
+      # ── 10. Build debug APK ──────────────────────────────────────────
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
