@@ -16,13 +16,10 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '11'
           distribution: 'temurin'
 
       - uses: android-actions/setup-android@v3
-
-      - name: Install SDK 35
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set SDK path
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
@@ -30,25 +27,13 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Print project structure
-        run: |
-          echo "=== settings.gradle ===" && cat android/settings.gradle
-          echo "=== build.gradle ===" && cat android/build.gradle
-          echo "=== app/build.gradle ===" && cat android/app/build.gradle
-          echo "=== gradle wrapper ===" && cat android/gradle/wrapper/gradle-wrapper.properties
-
       - name: Build APK
         working-directory: android
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
-          BUILD=${PIPESTATUS[0]}
-          if [ $BUILD -ne 0 ]; then
-            echo "## Build Failed" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -80 /tmp/gradle.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-          fi
-          exit $BUILD
+          ./gradlew assembleDebug --no-daemon 2>&1 | tee /tmp/g.log
+          B=${PIPESTATUS[0]}
+          cat /tmp/g.log >> $GITHUB_STEP_SUMMARY
+          exit $B
 
       - uses: actions/upload-artifact@v4
         with:
@@ -60,5 +45,5 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: "AI Career Toolkit v1.0.${{ github.run_number }}"
-          body: "Download APK below. Settings → Unknown Sources → Install"
+          body: "Settings → Unknown Sources → Install APK"
           files: android/app/build/outputs/apk/debug/app-debug.apk
