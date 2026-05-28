@@ -6,24 +6,42 @@ const getApiKey = (): string => {
   return localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || ''
 }
 
-const getModel = () => {
-  const key = getApiKey()
-  if (!key) throw new Error('NO_API_KEY')
-  const genAI = new GoogleGenerativeAI(key)
-  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+// Free AI via Pollinations — no API key needed, works for everyone
+const generateWithFreeAI = async (prompt: string): Promise<string> => {
+  const response = await fetch('https://text.pollinations.ai/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'openai',
+      private: true,
+    }),
+  })
+  if (!response.ok) throw new Error('Free AI request failed')
+  return response.text()
 }
 
 const safeGenerate = async (prompt: string): Promise<string> => {
-  try {
-    const model = getModel()
-    const result = await model.generateContent(prompt)
-    return result.response.text()
-  } catch (err: unknown) {
-    if (err instanceof Error && err.message === 'NO_API_KEY') {
-      throw new Error('Please add your free Gemini API key in Settings → AI API Key. Get a free key at aistudio.google.com')
+  const key = getApiKey()
+
+  // If user has their own Gemini key, use it (faster & more powerful)
+  if (key) {
+    try {
+      const genAI = new GoogleGenerativeAI(key)
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+      const result = await model.generateContent(prompt)
+      return result.response.text()
+    } catch (err) {
+      console.warn('Gemini key failed, falling back to free AI:', err)
     }
-    console.error('Gemini error:', err)
-    throw new Error('AI generation failed. Please try again.')
+  }
+
+  // Default: free AI (no key required) — works for all users automatically
+  try {
+    return await generateWithFreeAI(prompt)
+  } catch (err) {
+    console.error('Free AI error:', err)
+    throw new Error('AI generation failed. Please check your internet connection and try again.')
   }
 }
 

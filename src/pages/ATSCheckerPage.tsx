@@ -53,7 +53,7 @@ export const ATSCheckerPage: React.FC = () => {
       toast.success('ATS analysis complete!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : ''
-      if (msg === 'NO_API_KEY') toast.error('Add your Gemini API key in Settings')
+      // NO_API_KEY no longer thrown — free AI handles it
       else toast.error('Analysis failed. Please try again.')
     }
     setLoading(false)

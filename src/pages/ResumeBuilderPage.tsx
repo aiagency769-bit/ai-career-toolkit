@@ -70,7 +70,7 @@ export const ResumeBuilderPage: React.FC = () => {
       toast.success('AI summary generated!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed'
-      if (msg === 'NO_API_KEY') toast.error('Add your Gemini API key in Settings')
+      // NO_API_KEY no longer thrown — free AI handles it
       else toast.error('AI generation failed. Please try again.')
     }
     setAiLoading(null)
@@ -88,7 +88,7 @@ export const ResumeBuilderPage: React.FC = () => {
       toast.success('AI achievements generated!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed'
-      if (msg === 'NO_API_KEY') toast.error('Add your Gemini API key in Settings')
+      // NO_API_KEY no longer thrown — free AI handles it
       else toast.error('Failed to generate achievements')
     }
     setAiLoading(null)
@@ -106,7 +106,7 @@ export const ResumeBuilderPage: React.FC = () => {
       toast.success('AI skills added!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed'
-      if (msg === 'NO_API_KEY') toast.error('Add your Gemini API key in Settings')
+      // NO_API_KEY no longer thrown — free AI handles it
       else toast.error('Failed to generate skills')
     }
     setAiLoading(null)

@@ -33,7 +33,7 @@ export const ViralFeaturesPage: React.FC = () => {
       toast.success('🔥 Your resume has been roasted!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : ''
-      if (msg === 'NO_API_KEY') toast.error('Add your Gemini API key in Settings')
+      // NO_API_KEY no longer thrown — free AI handles it
       else toast.error('Roast failed. Try again!')
     }
     setLoading(false)

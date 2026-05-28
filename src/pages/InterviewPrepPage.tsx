@@ -55,7 +55,7 @@ export const InterviewPrepPage: React.FC = () => {
       toast.success('Questions generated!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : ''
-      if (msg === 'NO_API_KEY') toast.error('Add your Gemini API key in Settings')
+      // NO_API_KEY no longer thrown — free AI handles it
       else toast.error('Failed to generate questions')
     }
     setLoading(false)
@@ -84,7 +84,7 @@ export const InterviewPrepPage: React.FC = () => {
       toast.success('Answer evaluated!')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : ''
-      if (msg === 'NO_API_KEY') toast.error('Add your Gemini API key in Settings')
+      // NO_API_KEY no longer thrown — free AI handles it
       else toast.error('Evaluation failed')
     }
     setEvaluating(null)
