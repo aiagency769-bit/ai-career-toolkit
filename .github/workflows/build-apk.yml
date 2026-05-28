@@ -21,6 +21,12 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -39,60 +45,24 @@ jobs:
           cp -r dist/. android/app/src/main/assets/public/
           cp capacitor.config.json android/app/src/main/assets/capacitor.config.json
 
-      - name: Accept Android SDK licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
-
-      - name: Install Android SDK 35
-        run: |
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
-
       - name: Set Android SDK path
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Validate Gradle wrapper
-        run: |
-          echo "Java version:"
-          java -version
-          echo "ANDROID_HOME: $ANDROID_HOME"
-          echo "Gradle wrapper:"
-          cat android/gradle/wrapper/gradle-wrapper.properties
-
       - name: Build debug APK
         working-directory: android
-        run: |
-          set -o pipefail
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
-        continue-on-error: true
-
-      - name: Show Gradle errors if build failed
-        if: always()
-        run: |
-          if [ -f /tmp/gradle.log ]; then
-            echo "====== BUILD ERRORS ======"
-            grep -E "FAILURE:|error:|Error|Exception|Could not|failed|FAILED" \
-              /tmp/gradle.log | grep -v "^Download\|deprecated\|warning\|Warning" | head -50 || true
-            echo "====== LAST 60 LINES ======"
-            tail -60 /tmp/gradle.log
-          fi
-
-      - name: Fail if APK not built
-        run: |
-          APK=$(find android/app/build/outputs -name "*.apk" 2>/dev/null | head -1)
-          if [ -z "$APK" ]; then
-            echo "APK not found — build failed. Check errors above."
-            exit 1
-          fi
-          echo "APK found: $APK"
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Save APK
         run: |
           mkdir -p release
           APK=$(find android/app/build/outputs -name "*.apk" | head -1)
+          if [ -z "$APK" ]; then
+            echo "ERROR: No APK found"
+            exit 1
+          fi
           cp "$APK" "release/AI-Career-Toolkit-v${{ github.run_number }}.apk"
           ls -lh release/
 
@@ -110,11 +80,5 @@ jobs:
           name: "AI Career Toolkit v1.0.${{ github.run_number }}"
           body: |
             ## 📱 AI Career Toolkit Android APK
-
-            ### Install karo:
-            1. Neeche se **APK download** karo
-            2. Settings → Security → Unknown Sources ✓
-            3. APK open karo → Install → Done!
+            Install: Settings → Security → Unknown Sources ✓ → Install APK
           files: release/*.apk
-          draft: false
-          prerelease: false

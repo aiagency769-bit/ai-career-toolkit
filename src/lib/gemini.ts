@@ -19,7 +19,9 @@ const safeGenerate = async (prompt: string): Promise<string> => {
     const result = await model.generateContent(prompt)
     return result.response.text()
   } catch (err: unknown) {
-    if (err instanceof Error && err.message === 'NO_API_KEY') throw err
+    if (err instanceof Error && err.message === 'NO_API_KEY') {
+      throw new Error('Please add your free Gemini API key in Settings → AI API Key. Get a free key at aistudio.google.com')
+    }
     console.error('Gemini error:', err)
     throw new Error('AI generation failed. Please try again.')
   }
