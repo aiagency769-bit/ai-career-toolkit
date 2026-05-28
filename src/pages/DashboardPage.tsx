@@ -52,42 +52,6 @@ export const DashboardPage: React.FC = () => {
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
 
-      {/* Gemini API Key Banner */}
-      {!hasApiKey && (
-        <motion.div
-          variants={item}
-          className="relative overflow-hidden rounded-2xl p-4 cursor-pointer"
-          style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.12) 0%, rgba(245,158,11,0.06) 100%)', border: '1px solid rgba(251,191,36,0.25)' }}
-          onClick={() => setPage('settings')}
-        >
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center text-lg">🔑</div>
-              <div>
-                <p className="text-sm font-bold text-amber-400">Set up Free Gemini AI Key to unlock all features</p>
-                <p className="text-xs text-white/40 mt-0.5">Google AI Studio se FREE key milti hai — 15 requests/min, 1M tokens/day</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <a
-                href="https://aistudio.google.com/app/apikey"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 font-semibold hover:bg-amber-500/30 transition-colors"
-                onClick={e => e.stopPropagation()}
-              >
-                Get Free Key ↗
-              </a>
-              <button
-                className="text-xs px-3 py-1.5 rounded-lg gradient-primary text-white font-semibold shadow-glow"
-                onClick={() => setPage('settings')}
-              >
-                Add Key →
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
 
       {/* Welcome hero */}
       <motion.div
