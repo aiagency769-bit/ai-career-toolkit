@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Java 21 (required by @capacitor/android 8.x) ─────────────
+      # ── 2. Java 21 (required by Capacitor 8) ─────────────────────────
       - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
@@ -30,7 +30,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      # ── 4. Install dependencies ──────────────────────────────────────
+      # ── 4. Install npm dependencies ──────────────────────────────────
       - name: Install npm dependencies
         run: npm ci
 
@@ -38,56 +38,57 @@ jobs:
       - name: Build Vite web app
         run: npm run build
 
-      # ── 6. Copy web assets directly into Android project ─────────────
+      # ── 6. Copy web assets into Android project ───────────────────────
       - name: Copy web assets into Android project
         run: |
           mkdir -p android/app/src/main/assets/public
           cp -r dist/. android/app/src/main/assets/public/
           cp capacitor.config.json android/app/src/main/assets/capacitor.config.json
-          echo "Assets copied:"
-          ls android/app/src/main/assets/public/
+          echo "Assets ready:"
+          ls android/app/src/main/assets/public/ | head -10
 
-      # ── 7. Set Android SDK path ──────────────────────────────────────
+      # ── 7. Accept Android SDK licenses ───────────────────────────────
+      - name: Accept Android SDK licenses
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | $SDKMANAGER --licenses 2>/dev/null || true
+
+      # ── 8. Install Android SDK 35 (pre-installed on runner) ──────────
+      - name: Install Android SDK 35
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          $SDKMANAGER "platforms;android-35" "build-tools;35.0.0"
+          echo "Installed:"
+          $SDKMANAGER --list_installed 2>/dev/null | grep -E "platforms|build-tools" || true
+
+      # ── 9. Set Android SDK path ──────────────────────────────────────
       - name: Set Android SDK path
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
-      # ── 8. Install Android SDK 36 ────────────────────────────────────
-      - name: Install Android SDK 36
-        run: |
-          echo "Available SDK manager:"
-          ls $ANDROID_HOME/cmdline-tools/
-          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          echo "y" | $SDKMANAGER "platforms;android-36" "build-tools;36.0.0" 2>&1 || \
-          echo "y" | $SDKMANAGER "platforms;android-35" "build-tools;35.0.0" 2>&1 || true
-          echo "Installed platforms:"
-          $SDKMANAGER --list_installed 2>/dev/null | grep "platforms;" || true
-
-      # ── 9. Make Gradle executable ────────────────────────────────────
+      # ── 10. Make Gradle executable ───────────────────────────────────
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      # ── 10. Build debug APK ───────────────────────────────────────────
+      # ── 11. Build debug APK ───────────────────────────────────────────
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
 
-      # ── 11. Find and save APK ─────────────────────────────────────────
-      - name: Find and save APK
+      # ── 12. Upload APK ───────────────────────────────────────────────
+      - name: Find and upload APK
         run: |
           mkdir -p release
-          echo "Searching for APK..."
-          find android/app/build -name "*.apk" 2>/dev/null || true
-          APK=$(find android/app/build -name "*.apk" | head -1)
+          APK=$(find android/app/build/outputs -name "*.apk" | head -1)
           if [ -z "$APK" ]; then
-            echo "ERROR: No APK found in build output!"
-            ls -la android/app/build/outputs/ 2>/dev/null || echo "outputs dir missing"
+            echo "ERROR: No APK found"
+            find android/app/build -type f 2>/dev/null | head -20
             exit 1
           fi
-          echo "Found APK: $APK"
+          echo "APK: $APK"
           cp "$APK" "release/AI-Career-Toolkit-v${{ github.run_number }}.apk"
           ls -lh release/
 
-      # ── 12. Upload APK as artifact ────────────────────────────────────
+      # ── 13. Upload artifact ──────────────────────────────────────────
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -95,10 +96,9 @@ jobs:
           path: release/*.apk
           retention-days: 30
 
-      # ── 13. Create GitHub Release ─────────────────────────────────────
+      # ── 14. Create GitHub Release ─────────────────────────────────────
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: "AI Career Toolkit v1.0.${{ github.run_number }}"
