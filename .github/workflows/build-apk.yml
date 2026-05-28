@@ -35,15 +35,34 @@ jobs:
           cat /tmp/g.log >> $GITHUB_STEP_SUMMARY
           exit $B
 
+      - name: Verify APK
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          if [ -f "$APK" ]; then
+            echo "✅ APK built: $(ls -lh $APK | awk '{print $5, $9}')" | tee -a $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ APK not found at $APK" | tee -a $GITHUB_STEP_SUMMARY
+            find android/app/build -name "*.apk" 2>/dev/null | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: AI-Career-Toolkit-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      - uses: softprops/action-gh-release@v2
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: "AI Career Toolkit v1.0.${{ github.run_number }}"
-          body: "Settings → Unknown Sources → Install APK"
+          tag_name: apk-build-${{ github.run_number }}
+          name: "AI Career Toolkit — Build ${{ github.run_number }}"
+          body: |
+            ## Install Instructions
+            1. Download `app-debug.apk` below
+            2. On your phone: Settings → Security → Unknown Sources (enable)
+            3. Open the downloaded APK and tap Install
           files: android/app/build/outputs/apk/debug/app-debug.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_unmatched_files: true
+          make_latest: true
