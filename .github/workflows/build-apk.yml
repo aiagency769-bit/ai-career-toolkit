@@ -40,7 +40,7 @@ jobs:
 
       - name: Verify APK
         run: |
-          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          APK=android/app/build/outputs/apk/debug/AI-Career-Toolkit.apk
           if [ -f "$APK" ]; then
             echo "APK built successfully: $(ls -lh $APK | awk '{print $5}')" | tee -a $GITHUB_STEP_SUMMARY
           else
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: AI-Career-Toolkit-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/AI-Career-Toolkit.apk
           retention-days: 30
 
       - name: Create Release
@@ -64,7 +64,7 @@ jobs:
             1. Download `app-debug.apk` below
             2. On your phone: Settings → Security → Unknown Sources (enable)
             3. Open the downloaded APK and tap Install
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          files: android/app/build/outputs/apk/debug/AI-Career-Toolkit.apk
           token: ${{ secrets.GITHUB_TOKEN }}
           fail_on_unmatched_files: true
           make_latest: true

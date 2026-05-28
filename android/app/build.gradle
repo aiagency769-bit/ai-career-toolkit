@@ -13,8 +13,17 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix ""
+        }
         release {
             minifyEnabled false
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "AI-Career-Toolkit.apk"
         }
     }
 
