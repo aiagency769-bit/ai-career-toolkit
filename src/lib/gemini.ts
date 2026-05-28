@@ -6,27 +6,23 @@ const getApiKey = (): string => {
   return localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || ''
 }
 
-// Free AI via Pollinations — no API key needed, works for everyone
-const generateWithFreeAI = async (prompt: string): Promise<string> => {
-  const response = await fetch('https://text.pollinations.ai/openai', {
+// Server-side AI proxy — handles all providers, no CORS issues
+const generateWithProxy = async (prompt: string): Promise<string> => {
+  const response = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'openai',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      private: true,
-    }),
+    body: JSON.stringify({ prompt }),
   })
-  if (!response.ok) throw new Error('Free AI request failed')
+  if (!response.ok) throw new Error('AI request failed')
   const data = await response.json()
-  return data.choices?.[0]?.message?.content ?? ''
+  if (!data.text) throw new Error('Empty AI response')
+  return data.text
 }
 
 const safeGenerate = async (prompt: string): Promise<string> => {
   const key = getApiKey()
 
-  // If user has their own Gemini key, use it (faster & more powerful)
+  // If user has their own Gemini key, use it directly (fastest)
   if (key) {
     try {
       const genAI = new GoogleGenerativeAI(key)
@@ -34,16 +30,16 @@ const safeGenerate = async (prompt: string): Promise<string> => {
       const result = await model.generateContent(prompt)
       return result.response.text()
     } catch (err) {
-      console.warn('Gemini key failed, falling back to free AI:', err)
+      console.warn('Gemini key failed, using server AI:', err)
     }
   }
 
-  // Default: free AI (no key required) — works for all users automatically
+  // Default: server-side proxy (free, no key needed for users)
   try {
-    return await generateWithFreeAI(prompt)
+    return await generateWithProxy(prompt)
   } catch (err) {
-    console.error('Free AI error:', err)
-    throw new Error('AI generation failed. Please check your internet connection and try again.')
+    console.error('AI error:', err)
+    throw new Error('AI generation failed. Please check your internet and try again.')
   }
 }
 

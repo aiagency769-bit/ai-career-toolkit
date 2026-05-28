@@ -43,7 +43,13 @@ export const exportResumeToPDF = async (elementId: string, filename = 'resume.pd
     position -= pageHeight
   }
 
-  pdf.save(filename)
+  // Mobile-friendly save: open as data URL if download doesn't work
+  try {
+    pdf.save(filename)
+  } catch {
+    const dataUrl = pdf.output('datauristring')
+    window.open(dataUrl, '_blank')
+  }
 }
 
 export const exportCoverLetterToPDF = async (content: string, filename = 'cover-letter.pdf'): Promise<void> => {
