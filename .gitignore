@@ -8,6 +8,12 @@ dist/
 dist-ssr/
 build/
 
+# Android build artifacts (keep android/ project but ignore build outputs)
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+
 # Environment files
 .env
 .env.local
@@ -43,3 +49,5 @@ vite.config.ts.timestamp-*
 
 # Local claude config (keep .claude/launch.json but not secrets)
 .claude/settings.local.json
+
+.vercel

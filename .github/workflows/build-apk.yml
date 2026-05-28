@@ -1,0 +1,101 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:   # manual trigger button in GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to upload release
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Node.js ───────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ── 3. Install dependencies ──────────────────────────────────────
+      - name: Install npm dependencies
+        run: npm ci
+
+      # ── 4. Build web app ─────────────────────────────────────────────
+      - name: Build Vite web app
+        run: npm run build
+
+      # ── 5. Sync Capacitor web assets into Android project ────────────
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      # ── 6. Java 17 ───────────────────────────────────────────────────
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # ── 7. Set Android SDK path ──────────────────────────────────────
+      - name: Set Android SDK path
+        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
+      # ── 8. Make Gradle executable ────────────────────────────────────
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      # ── 10. Build debug APK ──────────────────────────────────────────
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      # ── 11. Rename APK ───────────────────────────────────────────────
+      - name: Rename APK
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+             release/AI-Career-Toolkit-v${{ github.run_number }}.apk
+
+      # ── 12. Upload APK as workflow artifact ──────────────────────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Career-Toolkit-APK
+          path: release/*.apk
+          retention-days: 30
+
+      # ── 13. Also create a GitHub Release ─────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: "AI Career Toolkit v1.0.${{ github.run_number }}"
+          body: |
+            ## 📱 AI Career Toolkit Android APK
+
+            ### Install karo:
+            1. **APK download** karo neeche se
+            2. Phone pe `Unknown Sources` allow karo:
+               Settings → Security → Unknown Sources ✓
+            3. APK open karo → Install karo
+
+            ### Features:
+            - 🤖 AI CV / Resume Builder
+            - ✉️ Cover Letter Generator
+            - 📊 ATS Resume Checker
+            - 🎤 Interview Preparation
+            - 💼 LinkedIn Optimizer
+            - 🌐 Freelance Bio Generator
+            - 🏛️ Government Job Templates
+            - 📋 Job Application Tracker
+            - 🎯 AI Career Coach
+          files: release/*.apk
+          draft: false
+          prerelease: false
