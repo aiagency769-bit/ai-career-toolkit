@@ -8,17 +8,19 @@ const getApiKey = (): string => {
 
 // Free AI via Pollinations — no API key needed, works for everyone
 const generateWithFreeAI = async (prompt: string): Promise<string> => {
-  const response = await fetch('https://text.pollinations.ai/', {
+  const response = await fetch('https://text.pollinations.ai/openai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      messages: [{ role: 'user', content: prompt }],
       model: 'openai',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
       private: true,
     }),
   })
   if (!response.ok) throw new Error('Free AI request failed')
-  return response.text()
+  const data = await response.json()
+  return data.choices?.[0]?.message?.content ?? ''
 }
 
 const safeGenerate = async (prompt: string): Promise<string> => {
