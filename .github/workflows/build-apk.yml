@@ -69,22 +69,22 @@ jobs:
       # ── 10. Build debug APK ───────────────────────────────────────────
       - name: Build debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon --info 2>&1 | tail -100
+        run: ./gradlew assembleDebug --no-daemon
 
       # ── 11. Find and save APK ─────────────────────────────────────────
       - name: Find and save APK
         run: |
           mkdir -p release
-          echo "Looking for APK files..."
-          find android -name "*.apk" 2>/dev/null
-          APK=$(find android -name "*.apk" | head -1)
+          echo "Searching for APK..."
+          find android/app/build -name "*.apk" 2>/dev/null || true
+          APK=$(find android/app/build -name "*.apk" | head -1)
           if [ -z "$APK" ]; then
-            echo "ERROR: No APK found!"
+            echo "ERROR: No APK found in build output!"
+            ls -la android/app/build/outputs/ 2>/dev/null || echo "outputs dir missing"
             exit 1
           fi
-          echo "Found: $APK"
+          echo "Found APK: $APK"
           cp "$APK" "release/AI-Career-Toolkit-v${{ github.run_number }}.apk"
-          echo "Saved:"
           ls -lh release/
 
       # ── 12. Upload APK as artifact ────────────────────────────────────
