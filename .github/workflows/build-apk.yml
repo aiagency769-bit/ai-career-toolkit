@@ -1,0 +1,70 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set SDK path
+        run: |
+          ANDROID_SDK=/usr/local/lib/android/sdk
+          echo "ANDROID_HOME=$ANDROID_SDK" >> $GITHUB_ENV
+          echo "sdk.dir=$ANDROID_SDK" > android/local.properties
+          echo "Android SDK at: $ANDROID_SDK"
+          ls $ANDROID_SDK
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          ./gradlew assembleDebug --no-daemon 2>&1 | tee /tmp/g.log
+          B=${PIPESTATUS[0]}
+          cat /tmp/g.log >> $GITHUB_STEP_SUMMARY
+          exit $B
+
+      - name: Verify APK
+        run: |
+          APK=android/app/build/outputs/apk/debug/AI-Career-Toolkit.apk
+          if [ -f "$APK" ]; then
+            echo "APK built successfully: $(ls -lh $APK | awk '{print $5}')" | tee -a $GITHUB_STEP_SUMMARY
+          else
+            echo "APK not found!" | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AI-Career-Toolkit-APK
+          path: android/app/build/outputs/apk/debug/AI-Career-Toolkit.apk
+          retention-days: 30
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-build-${{ github.run_number }}
+          name: "AI Career Toolkit — Build ${{ github.run_number }}"
+          body: |
+            ## Install Instructions
+            1. Download `app-debug.apk` below
+            2. On your phone: Settings → Security → Unknown Sources (enable)
+            3. Open the downloaded APK and tap Install
+          files: android/app/build/outputs/apk/debug/AI-Career-Toolkit.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_unmatched_files: true
+          make_latest: true
