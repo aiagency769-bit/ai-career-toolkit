@@ -147,6 +147,7 @@ function localAIProxy(): Plugin {
 }
 
 export default defineConfig({
+  base: process.env.NODE_ENV === 'production' ? '/ai-career-toolkit/' : '/',
   plugins: [react(), localAIProxy()],
   resolve: {
     alias: {
