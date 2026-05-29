@@ -1,45 +1,131 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { ResumeData, CoverLetterInput, ATSResult } from '../types'
 
-// Use the API key from environment or let user configure it
-const getApiKey = (): string => {
-  return localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || ''
+const getGeminiKey = (): string =>
+  localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY || ''
+
+const getGroqKey = (): string =>
+  localStorage.getItem('groq_api_key') || import.meta.env.VITE_GROQ_KEY || ''
+
+// Legacy alias
+const getApiKey = getGeminiKey
+
+// Direct Groq call — fastest free AI, sub-second responses
+const generateWithGroq = async (prompt: string): Promise<string> => {
+  const key = getGroqKey()
+  if (!key) throw new Error('No Groq key')
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 2048,
+    }),
+  })
+  if (!response.ok) throw new Error(`Groq ${response.status}`)
+  const data = await response.json()
+  const text = data.choices?.[0]?.message?.content
+  if (!text) throw new Error('Empty Groq response')
+  return text
 }
 
-// Server-side AI proxy — handles all providers, no CORS issues
+// Server-side AI proxy (Vercel deployment)
 const generateWithProxy = async (prompt: string): Promise<string> => {
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt }),
   })
-  if (!response.ok) throw new Error('AI request failed')
+  if (!response.ok) throw new Error(`Proxy ${response.status}`)
   const data = await response.json()
-  if (!data.text) throw new Error('Empty AI response')
+  if (!data.text) throw new Error('Empty proxy response')
   return data.text
 }
 
-const safeGenerate = async (prompt: string): Promise<string> => {
-  const key = getApiKey()
+// Direct Pollinations call from browser (CORS-friendly, no key needed)
+const generateWithPollinations = async (prompt: string): Promise<string> => {
+  const response = await fetch('https://text.pollinations.ai/openai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'openai-large',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      private: true,
+    }),
+  })
+  if (!response.ok) throw new Error(`Pollinations ${response.status}`)
+  const data = await response.json()
+  const text = data.choices?.[0]?.message?.content
+  if (!text) throw new Error('Empty Pollinations response')
+  return text
+}
 
-  // If user has their own Gemini key, use it directly (fastest)
-  if (key) {
+// Direct HuggingFace call (fallback)
+const generateWithHuggingFace = async (prompt: string): Promise<string> => {
+  const response = await fetch(
+    'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        inputs: `<s>[INST] ${prompt} [/INST]`,
+        parameters: { max_new_tokens: 1500, temperature: 0.7, return_full_text: false },
+      }),
+    }
+  )
+  if (!response.ok) throw new Error(`HuggingFace ${response.status}`)
+  const data = await response.json()
+  const text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text
+  if (!text) throw new Error('Empty HF response')
+  return text
+}
+
+const safeGenerate = async (prompt: string): Promise<string> => {
+  // 1. Groq key (user-configured) — fastest, sub-second
+  if (getGroqKey()) {
     try {
-      const genAI = new GoogleGenerativeAI(key)
+      return await generateWithGroq(prompt)
+    } catch (err) {
+      console.warn('Groq failed:', err)
+    }
+  }
+
+  // 2. Gemini key (user-configured)
+  const geminiKey = getGeminiKey()
+  if (geminiKey) {
+    try {
+      const genAI = new GoogleGenerativeAI(geminiKey)
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
       const result = await model.generateContent(prompt)
       return result.response.text()
     } catch (err) {
-      console.warn('Gemini key failed, using server AI:', err)
+      console.warn('Gemini failed:', err)
     }
   }
 
-  // Default: server-side proxy (free, no key needed for users)
+  // 3. Server proxy (Vercel in production / Vite middleware in dev)
   try {
     return await generateWithProxy(prompt)
   } catch (err) {
-    console.error('AI error:', err)
-    throw new Error('AI generation failed. Please check your internet and try again.')
+    console.warn('Proxy failed, trying direct fallbacks:', err)
+  }
+
+  // 4. Direct Pollinations GET (browser → blocked by CORS, but works server-side)
+  try {
+    return await generateWithPollinations(prompt)
+  } catch (err) {
+    console.warn('Pollinations failed:', err)
+  }
+
+  // 5. HuggingFace
+  try {
+    return await generateWithHuggingFace(prompt)
+  } catch (err) {
+    console.error('All AI providers failed:', err)
+    throw new Error('AI generation failed. Please add a free Groq API key in Settings for instant AI responses.')
   }
 }
 
@@ -400,3 +486,5 @@ Format as bullet points. Keep it fun and shareable!
 export const hasApiKey = (): boolean => {
   return !!(localStorage.getItem('gemini_api_key') || import.meta.env.VITE_GEMINI_API_KEY)
 }
+
+export const generateWithAI = safeGenerate

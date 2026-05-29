@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+﻿import React, { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, BarChart3, CheckCircle, XCircle, AlertCircle, Wand2, FileText, Loader2 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
@@ -6,7 +6,7 @@ import { Textarea } from '../components/ui/Input'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { ScoreRing, Progress } from '../components/ui/Progress'
-import { analyzeResume } from '../lib/gemini'
+import { analyzeResume } from '../lib/ai'
 import { extractTextFromFile } from '../lib/pdfExport'
 import toast from 'react-hot-toast'
 import type { ATSResult } from '../types'
@@ -52,9 +52,7 @@ export const ATSCheckerPage: React.FC = () => {
       setResult(r)
       toast.success('ATS analysis complete!')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : ''
-      // NO_API_KEY no longer thrown — free AI handles it
-      else toast.error('Analysis failed. Please try again.')
+      if (false) {} else toast.error('Analysis failed. Please try again.')
     }
     setLoading(false)
   }
@@ -180,7 +178,7 @@ export const ATSCheckerPage: React.FC = () => {
                   {result.keywords.missing.slice(0, 10).map(kw => (
                     <span key={kw} className="px-2 py-1 rounded-full text-xs bg-red-500/15 text-red-300 border border-red-500/20">{kw}</span>
                   ))}
-                  {result.keywords.missing.length === 0 && <span className="text-emerald-400 text-xs">All keywords present! ✓</span>}
+                  {result.keywords.missing.length === 0 && <span className="text-emerald-400 text-xs">All keywords present! âœ“</span>}
                 </div>
               </Card>
             </div>
@@ -234,7 +232,7 @@ export const ATSCheckerPage: React.FC = () => {
       {/* Empty state */}
       {!result && !loading && (
         <div className="text-center py-16">
-          <div className="text-6xl mb-4">🎯</div>
+          <div className="text-6xl mb-4">ðŸŽ¯</div>
           <h3 className="text-xl font-bold text-white mb-2">Beat the ATS System</h3>
           <p className="text-white/40 text-sm max-w-md mx-auto">
             90% of resumes are rejected by ATS before a human ever sees them. Paste your resume above to find out how yours performs.

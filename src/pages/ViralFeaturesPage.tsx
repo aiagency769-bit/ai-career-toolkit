@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Flame, Share2, Copy, Check, Wand2, Loader2, Star, TrendingUp } from 'lucide-react'
 import { Button } from '../components/ui/Button'
@@ -6,7 +6,7 @@ import { Textarea } from '../components/ui/Input'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
 import { ScoreRing } from '../components/ui/Progress'
-import { roastResume } from '../lib/gemini'
+import { roastResume } from '../lib/ai'
 import { copyToClipboard } from '../lib/utils'
 import toast from 'react-hot-toast'
 
@@ -30,11 +30,9 @@ export const ViralFeaturesPage: React.FC = () => {
     try {
       const result = await roastResume(resumeText)
       setRoast(result)
-      toast.success('🔥 Your resume has been roasted!')
+      toast.success('ðŸ”¥ Your resume has been roasted!')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : ''
-      // NO_API_KEY no longer thrown — free AI handles it
-      else toast.error('Roast failed. Try again!')
+      if (false) {} else toast.error('Roast failed. Try again!')
     }
     setLoading(false)
   }
@@ -42,7 +40,7 @@ export const ViralFeaturesPage: React.FC = () => {
   const handleCopy = async () => {
     await copyToClipboard(roast)
     setCopied(true)
-    toast.success('Roast copied! Share it 😂')
+    toast.success('Roast copied! Share it ðŸ˜‚')
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -63,10 +61,10 @@ export const ViralFeaturesPage: React.FC = () => {
         className="text-center py-8 relative overflow-hidden rounded-2xl"
         style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(245,158,11,0.08))', border: '1px solid rgba(239,68,68,0.2)' }}
       >
-        <div className="text-6xl mb-3">🔥</div>
+        <div className="text-6xl mb-3">ðŸ”¥</div>
         <h2 className="text-3xl font-black text-white mb-2">Roast My Resume</h2>
         <p className="text-white/50 text-sm max-w-sm mx-auto">
-          Let AI brutally (but lovingly) roast your resume. Get savage feedback with actionable improvements. Share the burn! 😂
+          Let AI brutally (but lovingly) roast your resume. Get savage feedback with actionable improvements. Share the burn! ðŸ˜‚
         </p>
         <div className="flex justify-center gap-2 mt-4">
           <Badge variant="danger" dot>AI-Powered</Badge>
@@ -94,12 +92,12 @@ export const ViralFeaturesPage: React.FC = () => {
             className="bg-gradient-to-r from-red-600 to-orange-600 border-0 shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:shadow-[0_8px_30px_rgba(239,68,68,0.6)]"
             icon={<Flame size={20} />}
           >
-            {loading ? 'Preparing the roast...' : '🔥 Roast My Resume!'}
+            {loading ? 'Preparing the roast...' : 'ðŸ”¥ Roast My Resume!'}
           </Button>
 
           {/* Before/After comparison teaser */}
           <Card className="overflow-hidden">
-            <h4 className="font-semibold text-white mb-3 text-sm">📊 Resume Score Preview</h4>
+            <h4 className="font-semibold text-white mb-3 text-sm">ðŸ“Š Resume Score Preview</h4>
             <div className="grid grid-cols-2 gap-3">
               {SAMPLE_SCORES.map(({ label, score }) => (
                 <div key={label}>
@@ -125,7 +123,7 @@ export const ViralFeaturesPage: React.FC = () => {
         <div className="space-y-4">
           {loading ? (
             <Card className="min-h-96 flex flex-col items-center justify-center gap-4">
-              <div className="text-5xl animate-bounce">🔥</div>
+              <div className="text-5xl animate-bounce">ðŸ”¥</div>
               <Loader2 size={32} className="animate-spin text-orange-400" />
               <p className="text-white/60 text-sm">AI is preparing your roast...</p>
               <p className="text-white/30 text-xs">This might sting a little</p>
@@ -137,9 +135,9 @@ export const ViralFeaturesPage: React.FC = () => {
                 <ScoreRing score={overallScore} size={80} label="Overall" />
                 <div>
                   <div className="text-lg font-bold text-white mb-1">
-                    {overallScore >= 70 ? '👍 Decent Resume' : overallScore >= 50 ? '😬 Needs Work' : '💀 Critical Issues'}
+                    {overallScore >= 70 ? 'ðŸ‘ Decent Resume' : overallScore >= 50 ? 'ðŸ˜¬ Needs Work' : 'ðŸ’€ Critical Issues'}
                   </div>
-                  <p className="text-white/40 text-sm">But we found some... interesting choices 😂</p>
+                  <p className="text-white/40 text-sm">But we found some... interesting choices ðŸ˜‚</p>
                   <div className="flex gap-2 mt-3">
                     <Button variant="glass" size="sm" icon={copied ? <Check size={14} /> : <Copy size={14} />} onClick={handleCopy}>
                       {copied ? 'Copied!' : 'Copy'}
@@ -153,7 +151,7 @@ export const ViralFeaturesPage: React.FC = () => {
               <Card>
                 <div className="flex items-center gap-2 mb-4">
                   <Flame size={16} className="text-orange-400" />
-                  <span className="font-bold text-white text-sm">The Roast 🔥</span>
+                  <span className="font-bold text-white text-sm">The Roast ðŸ”¥</span>
                 </div>
                 <pre className="text-white/80 text-sm leading-relaxed whitespace-pre-wrap font-sans">
                   {roast}
@@ -162,7 +160,7 @@ export const ViralFeaturesPage: React.FC = () => {
             </div>
           ) : (
             <Card className="min-h-96 flex flex-col items-center justify-center text-center gap-4">
-              <div className="text-6xl">😈</div>
+              <div className="text-6xl">ðŸ˜ˆ</div>
               <div>
                 <h4 className="text-white font-bold mb-2">Ready to Get Roasted?</h4>
                 <p className="text-white/40 text-sm max-w-xs">
@@ -177,9 +175,9 @@ export const ViralFeaturesPage: React.FC = () => {
       {/* Other viral features */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { emoji: '⭐', title: 'Resume Rating', desc: 'Get a 1-10 rating with detailed breakdown', badge: 'Coming Soon' },
-          { emoji: '📊', title: 'Before/After', desc: 'Compare your resume before and after AI improvements', badge: 'Coming Soon' },
-          { emoji: '🎭', title: 'Career Memes', desc: 'Generate funny memes about your job search journey', badge: 'Coming Soon' },
+          { emoji: 'â­', title: 'Resume Rating', desc: 'Get a 1-10 rating with detailed breakdown', badge: 'Coming Soon' },
+          { emoji: 'ðŸ“Š', title: 'Before/After', desc: 'Compare your resume before and after AI improvements', badge: 'Coming Soon' },
+          { emoji: 'ðŸŽ­', title: 'Career Memes', desc: 'Generate funny memes about your job search journey', badge: 'Coming Soon' },
         ].map(f => (
           <Card key={f.title} hover className="text-center">
             <div className="text-4xl mb-3">{f.emoji}</div>

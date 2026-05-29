@@ -1,22 +1,22 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Linkedin, Copy, Check, Wand2, RefreshCw, Loader2 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Input, Textarea, Select } from '../components/ui/Input'
 import { Badge } from '../components/ui/Badge'
 import { Card } from '../components/ui/Card'
-import { generateLinkedInHeadline, generateLinkedInSummary, generateFreelanceBio } from '../lib/gemini'
+import { generateLinkedInHeadline, generateLinkedInSummary, generateFreelanceBio } from '../lib/ai'
 import { copyToClipboard } from '../lib/utils'
 import toast from 'react-hot-toast'
 
 type Tab = 'linkedin-headline' | 'linkedin-summary' | 'fiverr' | 'upwork' | 'freelancer'
 
 const TABS: { id: Tab; label: string; emoji: string; desc: string }[] = [
-  { id: 'linkedin-headline', label: 'LinkedIn Headline',  emoji: '💼', desc: 'Catchy headline that gets you noticed' },
-  { id: 'linkedin-summary',  label: 'LinkedIn Summary',   emoji: '📝', desc: 'About section that wins connections' },
-  { id: 'fiverr',            label: 'Fiverr Bio',         emoji: '🟢', desc: 'Gig description that gets orders' },
-  { id: 'upwork',            label: 'Upwork Overview',    emoji: '🔵', desc: 'Profile that attracts clients' },
-  { id: 'freelancer',        label: 'Freelancer Bio',     emoji: '🟡', desc: 'Profile that wins projects' },
+  { id: 'linkedin-headline', label: 'LinkedIn Headline',  emoji: 'ðŸ’¼', desc: 'Catchy headline that gets you noticed' },
+  { id: 'linkedin-summary',  label: 'LinkedIn Summary',   emoji: 'ðŸ“', desc: 'About section that wins connections' },
+  { id: 'fiverr',            label: 'Fiverr Bio',         emoji: 'ðŸŸ¢', desc: 'Gig description that gets orders' },
+  { id: 'upwork',            label: 'Upwork Overview',    emoji: 'ðŸ”µ', desc: 'Profile that attracts clients' },
+  { id: 'freelancer',        label: 'Freelancer Bio',     emoji: 'ðŸŸ¡', desc: 'Profile that wins projects' },
 ]
 
 export const LinkedInOptimizerPage: React.FC = () => {
@@ -53,9 +53,7 @@ export const LinkedInOptimizerPage: React.FC = () => {
       }
       toast.success('Content generated!')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : ''
-      // NO_API_KEY no longer thrown — free AI handles it
-      else toast.error('Generation failed. Please try again.')
+      if (false) {} else toast.error('Generation failed. Please try again.')
     }
     setLoading(false)
   }

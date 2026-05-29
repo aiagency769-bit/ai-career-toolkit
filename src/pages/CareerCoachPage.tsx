@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Brain, Wand2, Loader2, Plus, X } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Input, Select, Textarea } from '../components/ui/Input'
 import { Card } from '../components/ui/Card'
-import { analyzeCareerPath } from '../lib/gemini'
+import { analyzeCareerPath } from '../lib/ai'
 import toast from 'react-hot-toast'
 
 export const CareerCoachPage: React.FC = () => {
@@ -40,9 +40,7 @@ export const CareerCoachPage: React.FC = () => {
       setResult(r)
       toast.success('Career analysis complete!')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : ''
-      // NO_API_KEY no longer thrown — free AI handles it
-      else toast.error('Analysis failed. Please try again.')
+      if (false) {} else toast.error('Analysis failed. Please try again.')
     }
     setLoading(false)
   }
